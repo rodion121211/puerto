@@ -7,3 +7,4 @@ aiofiles
 aiohttp
 python-dotenv
 Flask
+python_version=="3.12.*"
