@@ -1,0 +1,9 @@
+discord.py
+fuzzywuzzy
+python-Levenshtein 
+requests
+googletrans==4.0.0rc1 
+aiofiles
+aiohttp
+python-dotenv
+Flask
