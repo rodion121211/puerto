@@ -12,7 +12,7 @@ import sqlite3
 import json
 import time
 from datetime import datetime, timedelta
-from googletrans import Translator
+from deep_translator import GoogleTranslator
 import aiofiles
 import math
 import aiohttp
@@ -134,9 +134,6 @@ def init_database():
 
 # Inicializar banco de dados
 init_database()
-
-# Tradutor
-translator = Translator()
 
 # Funções para streak diário
 def get_daily_streak(user_id):
@@ -1826,15 +1823,15 @@ async def clima(ctx, *, cidade):
 @bot.command(name='traduzir')
 async def traduzir(ctx, *, texto):
     try:
-        translated = translator.translate(texto, dest='pt')
+        traduzido = GoogleTranslator(source='auto', target='pt').translate(texto)
         embed = discord.Embed(
             title="🌐 Tradução",
-            description=f"**Original ({translated.src}):** {texto}\n**Tradução (pt):** {translated.text}",
+            description=f"**Original:** {texto}\n**Tradução (pt):** {traduzido}",
             color=discord.Color.green()
         )
-        awaitctx.reply(embed=embed)
+        await ctx.reply(embed=embed)
     except Exception as e:
-        awaitctx.reply(f"❌ Erro ao traduzir: {e}")
+        await ctx.reply(f"❌ Erro ao traduzir: {e}")
 
 # --- Comandos Utilitários ---
 @bot.command(name='perfil', aliases=['userinfo'])
