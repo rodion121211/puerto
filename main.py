@@ -12,7 +12,7 @@ import sqlite3
 import json
 import time
 from datetime import datetime, timedelta
-from deep_translator import GoogleTranslator
+# from deep_translator import GoogleTranslator - removido
 import aiofiles
 import math
 import aiohttp
@@ -29,6 +29,15 @@ bot = commands.Bot(command_prefix='p!', intents=intents, help_command=None)
 # --- SEU TOKEN DO BOT DISCORD ---
 load_dotenv()
 DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN')
+
+# Verificação de token melhorada
+if not DISCORD_BOT_TOKEN:
+    print("❌ ERRO: Token do Discord não encontrado!")
+    print("Configure o token nos Secrets do Replit:")
+    print("1. Clique na aba 'Secrets' (cadeado)")
+    print("2. Adicione: Key=DISCORD_BOT_TOKEN, Value=[SEU_TOKEN]")
+    print("3. Obtenha o token em: https://discord.com/developers/applications")
+    exit(1)
 
 # --- API DE FUTEBOL ---
 FOOTBALL_API_KEY = os.getenv('FOOTBALL_API_KEY', 'live_f1a72149356ef28e3de8370d2b66d7')
@@ -134,6 +143,8 @@ def init_database():
 
 # Inicializar banco de dados
 init_database()
+
+# Tradutor usando deep-translator (mais moderno e confiável)
 
 # Funções para streak diário
 def get_daily_streak(user_id):
@@ -1048,8 +1059,7 @@ class HelpView(View):
             name="🌐 Utilitários Diversos",
             value=(
                 "`p!ping` - Verificar latência do bot\n"
-                "`p!clima <cidade>` - Previsão do tempo\n"
-                "`p!traduzir <texto>` - Tradutor automático"
+                "`p!clima <cidade>` - Previsão do tempo"
             ),
             inline=False
         )
@@ -1401,7 +1411,7 @@ async def pagar_dinheiro(ctx, member: discord.Member, amount: int):
             description=f"Você não tem `{amount}` moedas para enviar. Seu saldo atual é `{get_user_money(sender_id)}`.",
             color=discord.Color.red()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
         return
 
     remove_user_money(sender_id, amount)
@@ -1412,12 +1422,12 @@ async def pagar_dinheiro(ctx, member: discord.Member, amount: int):
         description=f"Você enviou `{amount}` moedas para **{member.display_name}**. Seu novo saldo é `{get_user_money(sender_id)}`.",
         color=discord.Color.teal()
     )
-    await ctx.reply(embed=embed)
+    awaitctx.reply(embed=embed)
 
 @bot.command(name='ranking_money')
 async def ranking_money(ctx):
     ranking_embed = gerar_ranking_embed(ctx, "money", "Mais Ricos")
-    await ctx.reply(embed=ranking_embed)
+    awaitctx.reply(embed=ranking_embed)
 
 @bot.command(name='apostar', aliases=['bet', 'tigrinho'])
 async def apostar_command(ctx, amount: int):
@@ -1430,7 +1440,7 @@ async def apostar_command(ctx, amount: int):
             description="A quantia da aposta deve ser um número positivo.",
             color=discord.Color.red()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
         return
 
     if current_money < amount:
@@ -1439,7 +1449,7 @@ async def apostar_command(ctx, amount: int):
             description=f"Você não tem `{amount}` moedas para apostar. Seu saldo atual é `{current_money}`.",
             color=discord.Color.red()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
         return
 
     embed = discord.Embed(
@@ -1463,7 +1473,7 @@ async def investir(ctx, amount: int):
             description="A quantia do investimento deve ser um número positivo.",
             color=discord.Color.red()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
         return
 
     # Limitar investimento máximo a 10.000 moedas
@@ -1473,7 +1483,7 @@ async def investir(ctx, amount: int):
             description="O valor máximo para investimento é **10.000 moedas** por transação.\n\nIsso garante um mercado mais equilibrado e justo para todos!",
             color=discord.Color.red()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
         return
 
     if current_money < amount:
@@ -1482,7 +1492,7 @@ async def investir(ctx, amount: int):
             description=f"Você não tem `{amount}` moedas para investir. Seu saldo atual é `{current_money}`.",
             color=discord.Color.red()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
         return
 
     remove_user_money(user_id, amount)
@@ -1550,7 +1560,7 @@ async def investir(ctx, amount: int):
     )
     
     embed.set_footer(text=f"Limite máximo: 10.000 moedas • Mercado volátil - Dev: YevgennyMXP")
-    await ctx.reply(embed=embed)
+    awaitctx.reply(embed=embed)
 
 # --- Comandos de Moderação ---
 @bot.command(name='banir', aliases=['ban'])
@@ -1567,17 +1577,17 @@ async def banir(ctx, member: discord.Member, *, reason="Não especificado"):
             description=f"**{member.display_name}** foi banido do servidor.\n**Motivo:** {reason}",
             color=discord.Color.red()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
     except discord.Forbidden:
-        await ctx.reply("❌ Não tenho permissão para banir este usuário.")
+        awaitctx.reply("❌ Não tenho permissão para banir este usuário.")
     except Exception as e:
-        await ctx.reply(f"❌ Erro ao banir usuário: {e}")
+        awaitctx.reply(f"❌ Erro ao banir usuário: {e}")
 
 @bot.command(name='expulsar', aliases=['kick'])
 @commands.has_permissions(kick_members=True)
 async def expulsar(ctx, member: discord.Member, *, reason="Não especificado"):
     if member.top_role >= ctx.author.top_role:
-        await ctx.reply("❌ Você não pode expulsar um usuário com cargo superior ao seu!")
+        awaitctx.reply("❌ Você não pode expulsar um usuário com cargo superior ao seu!")
         return
     try:
         await member.kick(reason=reason)
@@ -1586,17 +1596,17 @@ async def expulsar(ctx, member: discord.Member, *, reason="Não especificado"):
             description=f"**{member.display_name}** foi expulso do servidor.\n**Motivo:** {reason}",
             color=discord.Color.orange()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
     except discord.Forbidden:
-        await ctx.reply("❌ Não tenho permissão para expulsar este usuário.")
+        awaitctx.reply("❌ Não tenho permissão para expulsar este usuário.")
     except Exception as e:
-        await ctx.reply(f"❌ Erro ao expulsar usuário: {e}")
+        awaitctx.reply(f"❌ Erro ao expulsar usuário: {e}")
 
 @bot.command(name='mutar', aliases=['mute'])
 @commands.has_permissions(manage_messages=True)
 async def mutar(ctx, member: discord.Member, duration: str = "10m", *, reason="Não especificado"):
     if member.top_role >= ctx.author.top_role:
-        await ctx.reply("❌ Você não pode mutar um usuário com cargo superior ao seu!")
+        awaitctx.reply("❌ Você não pode mutar um usuário com cargo superior ao seu!")
         return
     # Parse duration
     time_units = {"m": 60, "h": 3600, "d": 86400}
@@ -1618,11 +1628,11 @@ async def mutar(ctx, member: discord.Member, duration: str = "10m", *, reason="N
             description=f"**{member.display_name}** foi mutado por {duration}.\n**Motivo:** {reason}",
             color=discord.Color.red()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
     except discord.Forbidden:
-        await ctx.reply("❌ Não tenho permissão para mutar este usuário.")
+        awaitctx.reply("❌ Não tenho permissão para mutar este usuário.")
     except Exception as e:
-        await ctx.reply(f"❌ Erro ao mutar usuário: {e}")
+        awaitctx.reply(f"❌ Erro ao mutar usuário: {e}")
 
 @bot.command(name='desmutar', aliases=['unmute'])
 @commands.has_permissions(manage_messages=True)
@@ -1636,11 +1646,11 @@ async def desmutar(ctx, member: discord.Member):
             description=f"**{member.display_name}** foi desmutado.",
             color=discord.Color.green()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
     except discord.Forbidden:
-        await ctx.reply("❌ Não tenho permissão para desmutar este usuário.")
+        awaitctx.reply("❌ Não tenho permissão para desmutar este usuário.")
     except Exception as e:
-        await ctx.reply(f"❌ Erro ao desmutar usuário: {e}")
+        awaitctx.reply(f"❌ Erro ao desmutar usuário: {e}")
 
 @bot.command(name='avisar', aliases=['warn'])
 @commands.has_permissions(manage_messages=True)
@@ -1653,7 +1663,7 @@ async def avisar(ctx, member: discord.Member, *, reason):
         description=f"**{member.display_name}** recebeu um aviso.\n**Motivo:** {reason}\n**Total de avisos:** {len(warns)}",
         color=discord.Color.yellow()
     )
-    await ctx.reply(embed=embed)
+    awaitctx.reply(embed=embed)
 
 @bot.command(name='avisos', aliases=['warnings'])
 async def avisos(ctx, member: discord.Member = None):
@@ -1676,13 +1686,13 @@ async def avisos(ctx, member: discord.Member = None):
             date = datetime.fromisoformat(warn_time).strftime("%d/%m/%Y %H:%M")
             embed.add_field(name=f"Aviso #{i}", value=f"**Motivo:** {reason}\n**Data:** {date}", inline=False)
 
-    await ctx.reply(embed=embed)
+    awaitctx.reply(embed=embed)
 
 @bot.command(name='limpar', aliases=['clear'])
 @commands.has_permissions(manage_messages=True)
 async def limpar(ctx, amount: int):
     if amount <= 0 or amount > 100:
-        await ctx.reply("❌ A quantidade deve ser entre 1 e 100.")
+        awaitctx.reply("❌ A quantidade deve ser entre 1 e 100.")
         return
 
     try:
@@ -1692,11 +1702,11 @@ async def limpar(ctx, amount: int):
             description=f"Foram deletadas {len(deleted) - 1} mensagens.",
             color=discord.Color.green()
         )
-        msg = await ctx.reply(embed=embed)
+        msg = awaitctx.reply(embed=embed)
         await asyncio.sleep(3)
         await msg.delete()
     except discord.Forbidden:
-        await ctx.reply("❌ Não tenho permissão para deletar mensagens.")
+        awaitctx.reply("❌ Não tenho permissão para deletar mensagens.")
 
 # --- Comandos de Diversão ---
 @bot.command(name='roll')
@@ -1768,7 +1778,7 @@ async def avatar(ctx, member: discord.Member = None):
         color=discord.Color.blue()
     )
     embed.set_image(url=target.display_avatar.url)
-    await ctx.reply(embed=embed)
+    awaitctx.reply(embed=embed)
 
 @bot.command(name='banner')
 async def banner(ctx, member: discord.Member = None):
@@ -1788,7 +1798,7 @@ async def banner(ctx, member: discord.Member = None):
             color=discord.Color.red()
         )
 
-    await ctx.reply(embed=embed)
+    awaitctx.reply(embed=embed)
 
 @bot.command(name='coinflip')
 async def coinflip(ctx):
@@ -1816,22 +1826,11 @@ async def clima(ctx, *, cidade):
             description=f"**Temperatura:** {temp}°C\n**Condição:** {condition}\n**Umidade:** {humidity}%",
             color=discord.Color.blue()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
     except Exception as e:
-        await ctx.reply(f"❌ Erro ao obter informações do clima: {e}")
+        awaitctx.reply(f"❌ Erro ao obter informações do clima: {e}")
 
-@bot.command(name='traduzir')
-async def traduzir(ctx, *, texto):
-    try:
-        traduzido = GoogleTranslator(source='auto', target='pt').translate(texto)
-        embed = discord.Embed(
-            title="🌐 Tradução",
-            description=f"**Original:** {texto}\n**Tradução (pt):** {traduzido}",
-            color=discord.Color.green()
-        )
-        await ctx.reply(embed=embed)
-    except Exception as e:
-        await ctx.reply(f"❌ Erro ao traduzir: {e}")
+# Comando de tradução removido
 
 # --- Comandos Utilitários ---
 @bot.command(name='perfil', aliases=['userinfo'])
@@ -1851,7 +1850,7 @@ async def perfil(ctx, member: discord.Member = None):
     embed.add_field(name="🏷️ Cargos", value=f"{len(target.roles) - 1} cargos", inline=True)
     embed.add_field(name="🤖 Bot?", value="Sim" if target.bot else "Não", inline=True)
 
-    await ctx.reply(embed=embed)
+    awaitctx.reply(embed=embed)
 
 @bot.command(name='serverinfo')
 async def serverinfo(ctx):
@@ -1874,7 +1873,7 @@ async def serverinfo(ctx):
     embed.add_field(name="📅 Criado em", value=guild.created_at.strftime("%d/%m/%Y"), inline=True)
     embed.add_field(name="🔒 Nível de Verificação", value=str(guild.verification_level).title(), inline=True)
 
-    await ctx.reply(embed=embed)
+    awaitctx.reply(embed=embed)
 
 @bot.command(name='uptime')
 async def uptime(ctx):
@@ -1888,7 +1887,7 @@ async def uptime(ctx):
         description=f"O bot está online há: **{days}d {hours}h {minutes}m {seconds}s**",
         color=discord.Color.green()
     )
-    await ctx.reply(embed=embed)
+    awaitctx.reply(embed=embed)
 
 @bot.command(name='lembrete')
 async def lembrete(ctx, tempo, *, texto):
@@ -1898,7 +1897,7 @@ async def lembrete(ctx, tempo, *, texto):
         if tempo[-1] in time_units:
             duration = int(tempo[:-1]) * time_units[tempo[-1]]
         else:
-            await ctx.reply("❌ Formato de tempo inválido. Use: 10m, 2h, 1d")
+            awaitctx.reply("❌ Formato de tempo inválido. Use: 10m, 2h, 1d")
             return
 
         reminder_time = (datetime.now() + timedelta(seconds=duration)).isoformat()
@@ -1909,7 +1908,7 @@ async def lembrete(ctx, tempo, *, texto):
             description=f"Lembrete criado para daqui a {tempo}: {texto}",
             color=discord.Color.green()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
 
         # Wait and send reminder
         await asyncio.sleep(duration)
@@ -1919,12 +1918,12 @@ async def lembrete(ctx, tempo, *, texto):
             description=f"{ctx.author.mention} {texto}",
             color=discord.Color.yellow()
         )
-        await ctx.reply(embed=remind_embed)
+        awaitctx.reply(embed=remind_embed)
 
     except ValueError:
-        await ctx.reply("❌ Formato de tempo inválido.")
+        awaitctx.reply("❌ Formato de tempo inválido.")
     except Exception as e:
-        await ctx.reply(f"❌ Erro ao criar lembrete: {e}")
+        awaitctx.reply(f"❌ Erro ao criar lembrete: {e}")
 
 @bot.command(name='calc')
 async def calc(ctx, *, expression):
@@ -1932,7 +1931,7 @@ async def calc(ctx, *, expression):
         # Basic calculator - only allow safe operations
         allowed_chars = "0123456789+-*/.() "
         if not all(c in allowed_chars for c in expression):
-            await ctx.reply("❌ Expressão contém caracteres não permitidos.")
+            awaitctx.reply("❌ Expressão contém caracteres não permitidos.")
             return
 
         result = eval(expression)
@@ -1941,11 +1940,11 @@ async def calc(ctx, *, expression):
             description=f"**Expressão:** {expression}\n**Resultado:** {result}",
             color=discord.Color.blue()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
     except ZeroDivisionError:
-        await ctx.reply("❌ Divisão por zero não é permitida.")
+        awaitctx.reply("❌ Divisão por zero não é permitida.")
     except Exception as e:
-        await ctx.reply(f"❌ Erro na expressão: {e}")
+        awaitctx.reply(f"❌ Erro na expressão: {e}")
 
 # --- Comandos de Carreira e Rolls ---
 @bot.command(name='carreira', aliases=['career'])
@@ -1956,11 +1955,11 @@ async def carreira_command(ctx, member: discord.Member = None):
     embed = gerar_embed_carreira(target_user, dados_usuarios[target_user.id])
 
     if target_user.id == ctx.author.id:
-        message = await ctx.reply(embed=embed)
+        message = awaitctx.reply(embed=embed)
         dados_usuarios[target_user.id]['carreira_message_id'] = message.id
         dados_usuarios[target_user.id]['carreira_channel_id'] = ctx.channel.id
     else:
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
 
 @bot.command(name='alterar', aliases=['alter', 'change'])
 async def alterar(ctx, campo: str, *, valor):
@@ -1987,14 +1986,14 @@ async def alterar(ctx, campo: str, *, valor):
                 description=f"Campo `{campo_original}` não reconhecido. Você quis dizer `{campo_detectado}`? Ajustando para `{campo_detectado}`.",
                 color=discord.Color.orange()
             )
-            await ctx.reply(embed=embed)
+            awaitctx.reply(embed=embed)
         else:
             embed = discord.Embed(
                 title="❌ Campo Inválido",
                 description=f"Campo `{campo_original}` não reconhecido. Por favor, verifique a ortografia. Campos válidos para carreira incluem: {', '.join(campos_validos_alterar_carreira[:5])}...",
                 color=discord.Color.red()
             )
-            await ctx.reply(embed=embed)
+            awaitctx.reply(embed=embed)
             return
     else:
         embed = discord.Embed(
@@ -2002,7 +2001,7 @@ async def alterar(ctx, campo: str, *, valor):
             description=f"Campo `{campo_original}` não reconhecido. Por favor, verifique a ortografia. Campos válidos para carreira incluem: {', '.join(campos_validos_alterar_carreira[:5])}...",
             color=discord.Color.red()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
         return
 
     if campo_detectado is None:
@@ -2011,7 +2010,7 @@ async def alterar(ctx, campo: str, *, valor):
             description=f"Ocorreu um erro ao processar o campo `{campo_original}`. Tente novamente ou use um campo válido.",
             color=discord.Color.red()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
         return
 
     if campo_convertido in campos_numericos_carreira:
@@ -2021,7 +2020,7 @@ async def alterar(ctx, campo: str, *, valor):
                 description="Este campo aceita apenas números.",
                 color=discord.Color.red()
             )
-            await ctx.reply(embed=embed)
+            awaitctx.reply(embed=embed)
             return
         valor = int(valor)
     elif campo_convertido in ["nome", "nacionalidade", "clube", "posicao"]:
@@ -2034,7 +2033,7 @@ async def alterar(ctx, campo: str, *, valor):
         description=f"Campo `{campo_detectado}` atualizado para: `{valor}`",
         color=discord.Color.green()
     )
-    await ctx.reply(embed=embed)
+    awaitctx.reply(embed=embed)
 
     if 'carreira_message_id' in dados_usuarios[user.id] and 'carreira_channel_id' in dados_usuarios[user.id]:
         try:
@@ -2066,11 +2065,11 @@ async def rolls_command(ctx, member: discord.Member = None):
     embed = gerar_embed_rolls(target_user, dados_rolls[target_user.id], is_own_rolls)
 
     if is_own_rolls:
-        message = await ctx.reply(embed=embed)
+        message = awaitctx.reply(embed=embed)
         dados_rolls[target_user.id]['rolls_message_id'] = message.id
         dados_rolls[target_user.id]['rolls_channel_id'] = ctx.channel.id
     else:
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
 
 @bot.command(name='editar', aliases=['edit'])
 async def editar_roll(ctx, roll_name: str, *, value: str):
@@ -2081,7 +2080,7 @@ async def editar_roll(ctx, roll_name: str, *, value: str):
             description="Você ainda não tem rolls definidos! Use `p!rolls` para ver seus rolls e inicializá-los.",
             color=discord.Color.blue()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
         return
 
     roll_original_input = roll_name
@@ -2103,14 +2102,14 @@ async def editar_roll(ctx, roll_name: str, *, value: str):
                 description=f"Roll `{roll_original_input}` não reconhecido. Você quis dizer `{roll_detectado}`? Ajustando para `{roll_detectado}`.",
                 color=discord.Color.orange()
             )
-            await ctx.reply(embed=embed)
+            awaitctx.reply(embed=embed)
         else:
             embed = discord.Embed(
                 title="❌ Roll Inválido",
                 description=f"Roll `{roll_original_input}` não reconhecido. Por favor, verifique a ortografia. Rolls válidos incluem: {', '.join(campos_validos_rolls[:5])}...",
                 color=discord.Color.red()
             )
-            await ctx.reply(embed=embed)
+            awaitctx.reply(embed=embed)
             return
     else:
         embed = discord.Embed(
@@ -2118,7 +2117,7 @@ async def editar_roll(ctx, roll_name: str, *, value: str):
             description=f"Roll `{roll_original_input}` não reconhecido. Por favor, verifique a ortografia. Rolls válidos incluem: {', '.join(campos_validos_rolls[:5])}...",
             color=discord.Color.red()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
         return
 
     if roll_detectado is None:
@@ -2127,7 +2126,7 @@ async def editar_roll(ctx, roll_name: str, *, value: str):
             description=f"Ocorreu um erro ao processar o roll `{roll_original_input}`. Tente novamente ou use um roll válido.",
             color=discord.Color.red()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
         return
 
     if roll_convertido == "lancamento":
@@ -2138,7 +2137,7 @@ async def editar_roll(ctx, roll_name: str, *, value: str):
             description="Para este roll, o valor deve ser um **número**.",
             color=discord.Color.red()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
         return
     else:
         dados_rolls[user.id][roll_convertido] = int(value)
@@ -2148,7 +2147,7 @@ async def editar_roll(ctx, roll_name: str, *, value: str):
         description=f"Roll `{roll_detectado}` atualizado para: `{value}`",
         color=discord.Color.green()
     )
-    await ctx.reply(embed=embed)
+    awaitctx.reply(embed=embed)
 
     if 'rolls_message_id' in dados_rolls[user.id] and 'rolls_channel_id' in dados_rolls[user.id]:
         try:
@@ -2204,7 +2203,7 @@ async def adicionar_tarefa(ctx, *, task_name: str):
         description=f"Tarefa **'{task_name}'** adicionada com sucesso.",
         color=discord.Color.green()
     )
-    await ctx.reply(embed=embed)
+    awaitctx.reply(embed=embed)
 
 @bot.command(name='tarefas', aliases=['tasks'])
 async def listar_tarefas(ctx):
@@ -2215,7 +2214,7 @@ async def listar_tarefas(ctx):
             description="Você não tem nenhuma tarefa pendente.",
             color=discord.Color.light_grey()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
         return
 
     embed = discord.Embed(title="📋 Suas Tarefas", color=discord.Color.purple())
@@ -2223,7 +2222,7 @@ async def listar_tarefas(ctx):
         status = "✅ Concluída" if completed else "⏳ Pendente"
         embed.add_field(name=f"ID: {task_id}", value=f"**{name}** - {status}", inline=False)
 
-    await ctx.reply(embed=embed)
+    awaitctx.reply(embed=embed)
 
 @bot.command(name='completetask', aliases=['complete'])
 async def complete_task(ctx, task_id: int):
@@ -2233,14 +2232,14 @@ async def complete_task(ctx, task_id: int):
             description=f"Tarefa com ID `{task_id}` marcada como concluída!",
             color=discord.Color.green()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
     else:
         embed = discord.Embed(
             title="❌ Erro ao Concluir Tarefa",
             description=f"Não encontrei uma tarefa com o ID `{task_id}` ou ela já está concluída.",
             color=discord.Color.red()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
 
 @bot.command(name='deletetask', aliases=['deltask'])
 async def delete_task(ctx, task_id: int):
@@ -2250,14 +2249,14 @@ async def delete_task(ctx, task_id: int):
             description=f"Tarefa com ID `{task_id}` foi removida com sucesso.",
             color=discord.Color.dark_red()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
     else:
         embed = discord.Embed(
             title="❌ Erro ao Remover Tarefa",
             description=f"Não encontrei uma tarefa com o ID `{task_id}` para remover.",
             color=discord.Color.red()
         )
-        await ctx.reply(embed=embed)
+        awaitctx.reply(embed=embed)
 
 # --- Modal para p!resultado ---
 class ResultadoModal(Modal, title="⚽ Registrar Resultado da Partida"):
@@ -2521,21 +2520,21 @@ async def on_command_error(ctx, error):
             description=f"O comando `{ctx.invoked_with}` não existe. Use `p!ajuda` para ver todos os comandos.",
             color=discord.Color.red()
         )
-        await ctx.reply(embed=embed, delete_after=5)
+        awaitctx.reply(embed=embed, delete_after=5)
     elif isinstance(error, commands.MissingPermissions):
         embed = discord.Embed(
             title="❌ Sem Permissão",
             description="Você não tem permissão para usar este comando.",
             color=discord.Color.red()
         )
-        await ctx.reply(embed=embed, delete_after=5)
+        awaitctx.reply(embed=embed, delete_after=5)
     elif isinstance(error, commands.MissingRequiredArgument):
         embed = discord.Embed(
             title="❌ Argumento Obrigatório",
             description=f"Você esqueceu de fornecer um argumento obrigatório: `{error.param.name}`",
             color=discord.Color.red()
         )
-        await ctx.reply(embed=embed, delete_after=5)
+        awaitctx.reply(embed=embed, delete_after=5)
     else:
         print(f"Erro não tratado: {error}")
 
@@ -2547,7 +2546,7 @@ CLIENT_ID = '1377549020842692728'
 async def invite(ctx):
     permissions = discord.Permissions(administrator=True)  # ou personalize como quiser
     invite_url = discord.utils.oauth_url(client_id=CLIENT_ID, permissions=permissions)
-    await ctx.reply(f"🔗 Me adicione no seu servidor com este link:\n{invite_url}")
+    awaitctx.reply(f"🔗 Me adicione no seu servidor com este link:\n{invite_url}")
 
 
 # 1. Comando de Shop/Loja
@@ -6681,14 +6680,13 @@ ultra_match_simulator = UltraRealisticMatch()
 
 
 # --- Inicia o Bot ---
-if DISCORD_BOT_TOKEN is None:
-    print("ERRO: O token do bot Discord não foi encontrado! Certifique-se de configurar a variável de ambiente 'DISCORD_BOT_TOKEN' ou inseri-lo diretamente no código (não recomendado para produção).")
-    print("Para configurar no Replit:")
-    print("1. Vá na aba 'Secrets' (cadeado) no painel lateral")
-    print("2. Adicione um novo secret:")
-    print("   - Key: DISCORD_BOT_TOKEN")
-    print("   - Value: [SEU_TOKEN_DO_BOT_AQUI]")
-    print("3. Reinicie o bot")
-else:
+try:
     keep_alive()
+    print("🤖 Iniciando bot Discord...")
     bot.run(DISCORD_BOT_TOKEN)
+except discord.LoginFailure:
+    print("❌ ERRO: Token do Discord inválido!")
+    print("Verifique se o token está correto nos Secrets do Replit.")
+except Exception as e:
+    print(f"❌ ERRO: {e}")
+    print("Verifique sua configuração e tente novamente.")

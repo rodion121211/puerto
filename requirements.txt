@@ -2,9 +2,7 @@ discord.py
 fuzzywuzzy
 python-Levenshtein 
 requests
-deep-translator
 aiofiles
 aiohttp
 python-dotenv
 Flask
-
